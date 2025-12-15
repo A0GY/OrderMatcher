@@ -76,27 +76,57 @@ std::map<int,PriceLevel> Ask;
 
 int NewOrder(Command& EngineCommand)
 {
-    
+
+
+
+
+
     if (EngineCommand.side == Side::BUY){
 
-        Order buy(nextID,Side::BUY,EngineCommand.price,EngineCommand.Quantity,EngineCommand.Quantity,0, OrderStatus::New);
-        //Getters and setter for order because its private        
-        auto& level = Bids[EngineCommand.price];
-        level.fifo.push_back(buy);
-        int NewID = nextID;
-        nextID++;
-        return nextID;
-   
-   
-   
+
+        if (Ask.empty()){
+        int NewID = nextID;    
+            Order buy(nextID,Side::BUY,EngineCommand.price,EngineCommand.Quantity,EngineCommand.Quantity,0, OrderStatus::New);
+            //Getters and setter for order because its private        
+            auto& level = Bids[EngineCommand.price];
+            level.fifo.push_back(buy);
+            
+            nextID++;
+            return NewID;}
+        else if (!Ask.empty()){
+            int incoming = EngineCommand.Quantity;
+            for (auto i = Ask.begin(); i != Ask.end(); i++ ){
+                if (i->first == EngineCommand.price){
+                    for (i->second.fifo)
+                }
+
+            }
+
+
+
+
+
+        }
+        
+        
+        
+        
+        }
+    
+    if (EngineCommand.side == Side::SELL){
+
+        int NewID = nextID;    
+            Order buy(NewID,Side::SELL,EngineCommand.price,EngineCommand.Quantity,EngineCommand.Quantity,0, OrderStatus::New);
+            //Getters and setter for order because its private        
+            auto& level = Ask[EngineCommand.price];
+            level.fifo.push_back(buy);
+            
+            nextID++;
+            return NewID;
+        }
     }
 
 
-
-
-
-
-    }
 
 
 
@@ -189,10 +219,10 @@ int main () {
      
     switch (command.type)
     {
-        case (CommantType::New): std::cout << "Test call working for new" << std::endl;
-        case (CommantType::Cancle): std::cout << "Test call working for Cancel" << std::endl;
-        case (CommantType::Ouit): std::cout << "Test call working for Quit" << std::endl;
-        case (CommantType::PrintBook): std::cout << "Test call working for PB" << std::endl;
+        case (CommantType::New): std::cout << "Test call working for new" << std::endl; break;
+        case (CommantType::Cancle): std::cout << "Test call working for Cancel" << std::endl; break;
+        case (CommantType::Ouit): std::cout << "Test call working for Quit" << std::endl; break;
+        case (CommantType::PrintBook): std::cout << "Test call working for PB" << std::endl; break;
 
     } 
     
