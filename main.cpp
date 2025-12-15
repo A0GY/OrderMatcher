@@ -6,6 +6,12 @@
 #include <optional>
 #include <print>
 #include <string>
+#include <map>
+#include <unordered_map>
+#include <list>
+
+
+
 enum class CommantType //M2
 {
 New,Cancle,PrintBook,Ouit
@@ -60,16 +66,48 @@ int Quantity {};
 int TS {};
 };
 
+struct PriceLevel {std::list<Order> fifo;};
+
 struct MachingEngine 
 {
+int nextID {1};
+std::map<int,PriceLevel> Bids;
+std::map<int,PriceLevel> Ask;
+
+int NewOrder(Command& EngineCommand)
+{
+    
+    if (EngineCommand.side == Side::BUY){
+
+        Order buy(nextID,Side::BUY,EngineCommand.price,EngineCommand.Quantity,EngineCommand.Quantity,0, OrderStatus::New);
+        //Getters and setter for order because its private        
+        auto& level = Bids[EngineCommand.price];
+        level.fifo.push_back(buy);
+        int NewID = nextID;
+        nextID++;
+        return nextID;
+   
+   
+   
+    }
+
+
+
+
+
+
+    }
 
 
 
 
 };
 
+
+
+
 int main () {
-  
+  MachingEngine engine;
     while(true){
    
    // Code to spilt tokens for mapping object variables
@@ -90,40 +128,78 @@ int main () {
             size_t start2 = com_pos1 + 1;
             auto com_pos2 = CMD.find(" ", start2);
             std::string Token2 = CMD.substr(start2, com_pos2 - start2);
-            if (Token2 == "BUY")
-            {command.side = Side::BUY;}
-            else if (Token2 == "SELL"){ command.side = Side::SELL;}
-            else { std::cout << "Error your second statment must either be BUY/SELL" << std::endl;
-            break;}
             size_t start3 = com_pos2 + 1;
             auto com_pos3 = CMD.find(" ", start3);
-            double Token3 = stod(CMD.substr(start3, com_pos3 - start3));
-            
+            int Token3 = stod(CMD.substr(start3, com_pos3 - start3));
             size_t start4 = com_pos3 + 1;
             int  Token4 = stoi(CMD.substr(start4));
-        }
+            
+            
+            if (Token2 == "BUY")
+            {command.side = Side::BUY;
+          
+            command.price = Token3;
+            command.Quantity = Token4;
+
+            std::println("You have made a {} order of {} {} shares at a price of {}", Token1,Token2,Token4,Token3 );
+
+            
+            }
+            
+            
+            else if (Token2 == "SELL")
+            { 
+            command.side = Side::SELL;
+            
+            
+            command.price = Token3;
+            command.Quantity = Token4;
+
+            std::println("You have made a {} order of {} {} shares at a price of {}", Token1,Token2,Token4,Token3 );
+            
+            }
+            else { std::cout << "Error your second statment must either be BUY/SELL" << std::endl;
+            continue;}
+           }
         else if (Token1 == "CANCEL")
         {
             command.type = CommantType::Cancle;
             size_t start2 = com_pos1 + 1;
             std::string Token2 = CMD.substr(start2);
+            command.OrderID = stoi(Token2);
             std::println("You have put a requrest to {} order {}",Token1,Token2 );
-            break; 
+             
         }
         
-       //... size_t start2 = com_pos1 + 1;
-        //auto com_pos2 = CMD.find(" ", start2);
-        //std::string Token2 = CMD.substr(start2, com_pos2 - start2);
-           
-        //size_t start3 = com_pos2 + 1;
-        //auto com_pos3 = CMD.find(" ", start3);
-        //double Token3 = stod(CMD.substr(start3, com_pos3 - start3));
-        
-        //size_t start4 = com_pos3 + 1;
-        //int  Token4 = stoi(CMD.substr(start4));
+        else if (Token1 == "PRINT BOOK")
+        {
+            std::cout << "TBC" << std::endl;
+        }
+
+        else if (Token1 == "QUIT")
+        {
+            std::cout << "TBC" << std::endl;
+            
+        }
+
+        //--------------------------------------------------------------------
+        std::println("command has now been formed");
+
+     // Now we disptaach to the engine but we need to actually create the engine methods first we will use a switch case and then send off 
+     
+    switch (command.type)
+    {
+        case (CommantType::New): std::cout << "Test call working for new" << std::endl;
+        case (CommantType::Cancle): std::cout << "Test call working for Cancel" << std::endl;
+        case (CommantType::Ouit): std::cout << "Test call working for Quit" << std::endl;
+        case (CommantType::PrintBook): std::cout << "Test call working for PB" << std::endl;
+
+    } 
+    
+    
 
 
-        //std::println ("{} {} {} {}", Token1,Token2,Token3,Token4);
+
     }
 
     return 0;
