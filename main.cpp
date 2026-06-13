@@ -9,17 +9,14 @@
 #include <map>
 #include <unordered_map>
 #include <list>
-
-
+#include <algorithm>
 
 enum class CommantType //M2
 {
-New,Cancle,PrintBook,Ouit
-};
+New,Cancle,PrintBook,Ouit};
 
- enum class Side {//M1
-    BUY = 0, SELL = 1 
-};
+enum class Side {//M1
+    BUY = 0, SELL = 1 };
 
 struct Command { //M2
     CommantType type;
@@ -56,6 +53,35 @@ public:
 Order () = default;
 
 Order (int Id, Side s, int price, int o_quantity, int n_quantity, int ts, OrderStatus OS) : ID{Id}, side{s}, Price{price}, O_Quantity{o_quantity}, N_Quantity{n_quantity}, TS{ts}, status{OS} {}
+
+public:
+
+int remaining() const{
+    return N_Quantity;
+}
+
+void reduce_remaining (int filled) {
+
+    if (filled > 0 && filled <= N_Quantity){
+    N_Quantity -= filled;
+    // this would make sense? OrderStatus::Filled;
+    std::println("Order {} has now been filled ", ID);
+}
+     
+}
+
+int id() const{
+    return ID;
+
+};
+int price() const{
+    return Price;
+}
+
+Side get_side() const{
+    return side;
+}
+
 };
 
 struct Trade{ //M1
@@ -71,16 +97,11 @@ struct PriceLevel {std::list<Order> fifo;};
 struct MachingEngine 
 {
 int nextID {1};
-std::map<int,PriceLevel> Bids;
-std::map<int,PriceLevel> Ask;
+std::map<int,PriceLevel> Bids; // BUYERS
+std::map<int,PriceLevel> Ask; //SELLERS
 
 int NewOrder(Command& EngineCommand)
 {
-
-
-
-
-
     if (EngineCommand.side == Side::BUY){
 
 
@@ -90,30 +111,38 @@ int NewOrder(Command& EngineCommand)
             //Getters and setter for order because its private        
             auto& level = Bids[EngineCommand.price];
             level.fifo.push_back(buy);
-            
+            std::println("Your Buy order has been added to the book \n \n");
             nextID++;
             return NewID;}
+            
         else if (!Ask.empty()){
             int incoming = EngineCommand.Quantity;
             for (auto i = Ask.begin(); i != Ask.end(); i++ ){
-                if (i->first == EngineCommand.price){
-                    for (i->second.fifo)
+                if (i->first <= EngineCommand.price && incoming > 0){
+                    auto& fifo = i->second.fifo;
+                    while (!fifo.empty() && incoming > 0){
+                    
+                    auto& maker = fifo.front(); // access the oldest order at price lvl
+                    // need to get the quant and then subtract it from the buys quant
+                    int Ask_qant = maker.remaining();
+                    auto fill = std::min(incoming, Ask_qant);
+                    incoming -= fill;
+                    maker.reduce_remaining(fill);
+                    if (maker.remaining() == 0){
+                        fifo.pop_front();}
+                        
+                    }
+                    std::println("logic check ");
+                    // add logic for checking if the incoming is still > 0 and fifo may become empty making partial 
                 }
 
+            
             }
-
-
-
-
-
         }
-        
-        
-        
-        
-        }
+    }
     
     if (EngineCommand.side == Side::SELL){
+    if (Bids.empty()){
 
         int NewID = nextID;    
             Order buy(NewID,Side::SELL,EngineCommand.price,EngineCommand.Quantity,EngineCommand.Quantity,0, OrderStatus::New);
@@ -124,24 +153,41 @@ int NewOrder(Command& EngineCommand)
             nextID++;
             return NewID;
         }
+        else if (!Bids.empty()){
+             int incoming = EngineCommand.Quantity;
+            for (auto i = Bids.rbegin(); i != Bids.rend(); i++ ){
+                if (i->first >= EngineCommand.price && incoming > 0){
+                    auto& fifo = i->second.fifo;
+                    while (!fifo.empty() && incoming > 0){
+                    
+                    auto& maker = fifo.front(); // access the oldest order at price lvl
+                    // need to get the quant and then subtract it from the buys quant
+                    int Ask_qant = maker.remaining();
+                    auto fill = std::min(incoming, Ask_qant);
+                    incoming -= fill;
+                    maker.reduce_remaining(fill);
+                    if (maker.remaining() == 0){
+                        //return maker id
+                        fifo.pop_front();}
+                    }    
+                }
+
+            
+            }
+        }
     }
 
-
-
-
+return 0;}
 
 
 };
-
-
-
 
 int main () {
   MachingEngine engine;
     while(true){
    
    // Code to spilt tokens for mapping object variables
-   std::cout << "Please input youe chosen action (if unsure please check docs)" << std::endl;
+   std::cout << "Please input youe chosen action (if unsure please check docs) \n"  << std::endl;
    Command command;
    std::string CMD {""}; 
    std::getline(std::cin, CMD);
@@ -152,7 +198,7 @@ int main () {
         if (Token1 == "NEW"){
 
             command.type = CommantType::New;
-            std::cout << "Command was set to NEW successfully" << std::endl;
+            std::cout << "Command was set to NEW successfully \n"  << std::endl;
             
             
             size_t start2 = com_pos1 + 1;
@@ -171,7 +217,7 @@ int main () {
             command.price = Token3;
             command.Quantity = Token4;
 
-            std::println("You have made a {} order of {} {} shares at a price of {}", Token1,Token2,Token4,Token3 );
+            std::println("You have made a {} order of {} {} shares at a price of {} \n ",  Token1,Token2,Token4,Token3 );
 
             
             }
@@ -185,10 +231,10 @@ int main () {
             command.price = Token3;
             command.Quantity = Token4;
 
-            std::println("You have made a {} order of {} {} shares at a price of {}", Token1,Token2,Token4,Token3 );
+            std::println("You have made a {} order of {} {} shares at a price of {} \n" , Token1,Token2,Token4,Token3 );
             
             }
-            else { std::cout << "Error your second statment must either be BUY/SELL" << std::endl;
+            else { std::cout << "Error your second statment must either be BUY/SELL \n" << std::endl;
             continue;}
            }
         else if (Token1 == "CANCEL")
@@ -197,7 +243,7 @@ int main () {
             size_t start2 = com_pos1 + 1;
             std::string Token2 = CMD.substr(start2);
             command.OrderID = stoi(Token2);
-            std::println("You have put a requrest to {} order {}",Token1,Token2 );
+            std::println("You have put a requrest to {} order {} \n",Token1,Token2 );
              
         }
         
@@ -213,13 +259,18 @@ int main () {
         }
 
         //--------------------------------------------------------------------
-        std::println("command has now been formed");
+        std::println("command has now been formed \n \n ");
 
      // Now we disptaach to the engine but we need to actually create the engine methods first we will use a switch case and then send off 
      
     switch (command.type)
     {
-        case (CommantType::New): std::cout << "Test call working for new" << std::endl; break;
+        case (CommantType::New): std::cout << "Test call working for new \n " << std::endl; 
+        engine.NewOrder(command);
+        break;
+
+
+
         case (CommantType::Cancle): std::cout << "Test call working for Cancel" << std::endl; break;
         case (CommantType::Ouit): std::cout << "Test call working for Quit" << std::endl; break;
         case (CommantType::PrintBook): std::cout << "Test call working for PB" << std::endl; break;
