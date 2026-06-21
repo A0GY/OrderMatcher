@@ -146,7 +146,7 @@ nextID++;
                     while (!fifo.empty() && incoming > 0){
                     
                     auto& maker = fifo.front(); // access the oldest order at price lvl
-                    // need to get the quant and then subtract it from the buys quant
+                    // need to get the quant and then subtract it from the buys quant.
                     int Ask_qant = maker.remaining();
                     auto fill = std::min(incoming, Ask_qant);
                     incoming -= fill;
