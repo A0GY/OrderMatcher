@@ -10,6 +10,8 @@
 #include <unordered_map>
 #include <list>
 #include <algorithm>
+#include <ostream>
+
 
 enum class CommantType //M2
 {
@@ -65,9 +67,15 @@ void reduce_remaining (int filled) {
     if (filled > 0 && filled <= N_Quantity){
     N_Quantity -= filled;
     // this would make sense? OrderStatus::Filled;
-    std::println("Order {} has now been filled ", ID);
+   
 }
      
+}
+
+void Filled() 
+{
+std::println("Order {} has been filled", ID);
+status = OrderStatus::Filled;
 }
 
 int id() const{
@@ -89,30 +97,45 @@ int OrderB_ID {};
 int OrderS_ID {};
 int price {};
 int Quantity {};
-int TS {};
+std::time_t TS {};
 };
 
 struct PriceLevel {std::list<Order> fifo;};
+
+struct Location //To help cancel a order 
+{
+    Side side;          
+    int Price;
+    std::list<Order>::iterator it;
+
+};
 
 struct MachingEngine 
 {
 int nextID {1};
 std::map<int,PriceLevel> Bids; // BUYERS
 std::map<int,PriceLevel> Ask; //SELLERS
+std::unordered_map<int,std::list<Order>> order_index; // to cancel an order
+std::vector<Trade> Trade_Record; //trade recorded
 
 int NewOrder(Command& EngineCommand)
 {
+int NewID = nextID;  
+nextID++;
     if (EngineCommand.side == Side::BUY){
-
-
         if (Ask.empty()){
-        int NewID = nextID;    
-            Order buy(nextID,Side::BUY,EngineCommand.price,EngineCommand.Quantity,EngineCommand.Quantity,0, OrderStatus::New);
+            
+            Order buy(NewID,Side::BUY,EngineCommand.price,EngineCommand.Quantity,EngineCommand.Quantity,0, OrderStatus::New);
             //Getters and setter for order because its private        
             auto& level = Bids[EngineCommand.price];
             level.fifo.push_back(buy);
             std::println("Your Buy order has been added to the book \n \n");
-            nextID++;
+            
+            Location location;
+            location.side == Side::BUY;
+            location.Price == EngineCommand.price;
+            auto indexP = std::prev(level.fifo.end());
+            location.it = indexP;
             return NewID;}
             
         else if (!Ask.empty()){
@@ -128,29 +151,59 @@ int NewOrder(Command& EngineCommand)
                     auto fill = std::min(incoming, Ask_qant);
                     incoming -= fill;
                     maker.reduce_remaining(fill);
+                    
+                    //add record to trade 
+                    Trade trade_ex;
+                    trade_ex.OrderS_ID = maker.id();
+                    trade_ex.OrderB_ID = NewID;
+                    trade_ex.price = maker.price();
+                    auto live_ts = std::chrono::system_clock::now();
+                    trade_ex.TS = std::chrono::duration_cast<std::chrono::microseconds>(live_ts.time_since_epoch()).count(); // Look over this syntax and use of auto 
+                    trade_ex.Quantity = fill;
+                    Trade_Record.push_back(trade_ex);
+                    
                     if (maker.remaining() == 0){
-                        fifo.pop_front();}
-                        
-                    }
-                    std::println("logic check ");
-                    //ADD logic for > 0 incoming to make parital order if fifio empty 
-                }
+                        maker.Filled();
+                        fifo.pop_front();}        
+                }               
+        }            
+     }
+            //ADD logic for > 0 incoming to make parital order if fifio empty 
+                if (incoming > 0){
+                    
+                    // we need to turn this into a partial order as it has not been fully filled and there are no asks/sells open 
+                    Order buy(NewID,Side::BUY,EngineCommand.price,incoming,incoming,0, OrderStatus::PatiallyFilled);
+                     std::println("Partial order was made to fill quant of {} of order {}",incoming,nextID);
+                    // maybe just turn this into a case to either make partial or remove object/add it to orders tracker
+                    auto& level = Bids[EngineCommand.price];
+                    level.fifo.push_back(buy);
+                     
+            Location location;
+            location.side == Side::BUY;
+            location.Price == EngineCommand.price;
+            auto indexP = std::prev(level.fifo.end());
+            location.it = indexP;        
+            return NewID;
 
-            
-            }
+                        
         }
     }
+}
     
     if (EngineCommand.side == Side::SELL){
     if (Bids.empty()){
 
-        int NewID = nextID;    
-            Order buy(NewID,Side::SELL,EngineCommand.price,EngineCommand.Quantity,EngineCommand.Quantity,0, OrderStatus::New);
+          
+            Order sell(NewID,Side::SELL,EngineCommand.price,EngineCommand.Quantity,EngineCommand.Quantity,0, OrderStatus::New);
             //Getters and setter for order because its private        
             auto& level = Ask[EngineCommand.price];
-            level.fifo.push_back(buy);
-            
-            nextID++;
+            level.fifo.push_back(sell);
+             
+            Location location;
+            location.side == Side::SELL;
+            location.Price == EngineCommand.price;
+            auto indexP = std::prev(level.fifo.end());
+            location.it = indexP;
             return NewID;
         }
         else if (!Bids.empty()){
@@ -166,24 +219,56 @@ int NewOrder(Command& EngineCommand)
                     auto fill = std::min(incoming, Ask_qant);
                     incoming -= fill;
                     maker.reduce_remaining(fill);
+                    
+                    //add record to trade 
+                    Trade trade_ex;
+                    trade_ex.OrderB_ID = maker.id();
+                    trade_ex.OrderS_ID = NewID;
+                    trade_ex.price = maker.price();
+                    auto live_ts = std::chrono::system_clock::now();
+                    trade_ex.TS = std::chrono::duration_cast<std::chrono::microseconds>(live_ts.time_since_epoch()).count(); // Look over this syntax and use of auto 
+                    trade_ex.Quantity = fill;
+                    Trade_Record.push_back(trade_ex);
+                    
                     if (maker.remaining() == 0){
-                        //return maker id
+                        //return maker id/not
+                        maker.Filled();
                         fifo.pop_front();}
                     }    
                 }
 
             
             }
+            
+            //ADD logic for > 0 incoming to make parital order if fifio empty 
+                if (incoming > 0){
+                    
+                    // we need to turn this into a partial order as it has not been fully filled and there are no asks/sells open 
+                    Order sell(NewID,Side::SELL,EngineCommand.price,incoming,incoming,0, OrderStatus::PatiallyFilled);
+                     std::println("Partial order was made to fill quant of {} of order {}",incoming,nextID);
+                    // maybe just turn this into a case to either make partial or remove object/add it to orders tracker
+                    auto& level = Ask[EngineCommand.price];
+                    level.fifo.push_back(sell);
+                     
+                    Location location;
+                    location.side == Side::SELL;
+                    location.Price == EngineCommand.price;
+                    auto indexP = std::prev(level.fifo.end());
+                    location.it = indexP;
+                    return NewID;
         }
     }
-
-return 0;}
-
-
+}
+return 0;
+}
 };
 
 int main () {
-  MachingEngine engine;
+  auto live_ts = std::chrono::system_clock::now();
+  
+  std::cout << "time is : " << live_ts << "\n";
+  
+    MachingEngine engine;
     while(true){
    
    // Code to spilt tokens for mapping object variables
