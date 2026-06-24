@@ -115,8 +115,73 @@ struct MachingEngine
 int nextID {1};
 std::map<int,PriceLevel> Bids; // BUYERS
 std::map<int,PriceLevel> Ask; //SELLERS
-std::unordered_map<int,std::list<Order>> order_index; // to cancel an order
+std::unordered_map<int,Location> order_index; // to cancel an order
 std::vector<Trade> Trade_Record; //trade recorded
+
+// member function to access order_index to cancel an order
+void cancel_order(int order_id_)
+{
+    std::println("Attempting to cancel order number {}", order_id_);
+
+    auto find_order = order_index.find(order_id_);
+    if (find_order != order_index.end()){
+        // map out data
+        auto order_loc = find_order->second.it;
+        auto order_side = find_order->second.side;
+        auto order_price = find_order->second.Price;
+
+        if (order_side == Side::BUY){
+            auto Bids_Order = Bids.find(order_price);
+            auto& Price_found = Bids_Order->second.fifo;
+            Price_found.erase(order_loc);
+            std::println("Order {} has now been erased", order_id_);
+            order_index.erase(order_id_);
+        }
+
+        else if (order_side == Side::SELL){
+            auto Asks_Order = Ask.find(order_price);
+            auto& Price_found = Asks_Order->second.fifo;
+            Price_found.erase(order_loc);
+            std::println("Order {} has now been erased", order_id_);
+            order_index.erase(order_id_);
+        }
+
+    }
+
+    else {std::println("This is not a valid order ");
+    
+    }
+
+    
+
+
+
+
+
+}
+
+void remove_index(int index_id_){
+    auto find_index = order_index.find(index_id_);
+    if (find_index != order_index.end()){
+    order_index.erase(index_id_);
+    std::println("Order {} was removed from the order index map", index_id_);
+    }
+    else {
+        std::println("error index {} was not in the order index", index_id_);
+    }
+
+}
+
+void print_book(){
+    
+    for (int i{}; i < Trade_Record.size(); i++){
+        auto obj = Trade_Record.at(i);
+        std::println("Buy Order {} \n Sell Order {} \n Quantity {} \n Price: {} \n Time of order {}", obj.OrderB_ID, obj.OrderS_ID, obj.price, obj.Quantity, obj.TS);
+
+    }
+
+}
+
 
 int NewOrder(Command& EngineCommand)
 {
@@ -132,10 +197,11 @@ nextID++;
             std::println("Your Buy order has been added to the book \n \n");
             
             Location location;
-            location.side == Side::BUY;
-            location.Price == EngineCommand.price;
+            location.side = Side::BUY;
+            location.Price = EngineCommand.price;
             auto indexP = std::prev(level.fifo.end());
             location.it = indexP;
+            order_index.insert({NewID,location}); // lovley syntax 
             return NewID;}
             
         else if (!Ask.empty()){
@@ -164,6 +230,7 @@ nextID++;
                     
                     if (maker.remaining() == 0){
                         maker.Filled();
+                        remove_index(maker.id());
                         fifo.pop_front();}        
                 }               
         }            
@@ -179,10 +246,11 @@ nextID++;
                     level.fifo.push_back(buy);
                      
             Location location;
-            location.side == Side::BUY;
-            location.Price == EngineCommand.price;
+            location.side = Side::BUY;
+            location.Price = EngineCommand.price;
             auto indexP = std::prev(level.fifo.end());
-            location.it = indexP;        
+            location.it = indexP;
+            order_index.insert({NewID,location}); // lovley syntax     
             return NewID;
 
                         
@@ -200,10 +268,11 @@ nextID++;
             level.fifo.push_back(sell);
              
             Location location;
-            location.side == Side::SELL;
-            location.Price == EngineCommand.price;
+            location.side = Side::SELL;
+            location.Price = EngineCommand.price;
             auto indexP = std::prev(level.fifo.end());
             location.it = indexP;
+            order_index.insert({NewID,location});
             return NewID;
         }
         else if (!Bids.empty()){
@@ -233,6 +302,7 @@ nextID++;
                     if (maker.remaining() == 0){
                         //return maker id/not
                         maker.Filled();
+                        remove_index(maker.id());
                         fifo.pop_front();}
                     }    
                 }
@@ -251,11 +321,13 @@ nextID++;
                     level.fifo.push_back(sell);
                      
                     Location location;
-                    location.side == Side::SELL;
-                    location.Price == EngineCommand.price;
+                    location.side = Side::SELL;
+                    location.Price = EngineCommand.price;
                     auto indexP = std::prev(level.fifo.end());
                     location.it = indexP;
+                    order_index.insert({NewID,location});
                     return NewID;
+                    
         }
     }
 }
@@ -329,12 +401,13 @@ int main () {
             std::string Token2 = CMD.substr(start2);
             command.OrderID = stoi(Token2);
             std::println("You have put a requrest to {} order {} \n",Token1,Token2 );
+            
              
         }
         
-        else if (Token1 == "PRINT BOOK")
+        else if (Token1 == "PRINTBOOK")
         {
-            std::cout << "TBC" << std::endl;
+            command.type = CommantType::PrintBook;
         }
 
         else if (Token1 == "QUIT")
@@ -356,9 +429,15 @@ int main () {
 
 
 
-        case (CommantType::Cancle): std::cout << "Test call working for Cancel" << std::endl; break;
+        case (CommantType::Cancle): std::cout << "Test call working for Cancel" << std::endl;
+        engine.cancel_order(command.OrderID);
+         break;
+
+
         case (CommantType::Ouit): std::cout << "Test call working for Quit" << std::endl; break;
-        case (CommantType::PrintBook): std::cout << "Test call working for PB" << std::endl; break;
+        case (CommantType::PrintBook): std::cout << "Test call working for PB" << std::endl;
+        engine.print_book();
+        break;
 
     } 
     
