@@ -228,7 +228,7 @@ nextID++;
                     incoming -= fill;
                     maker.reduce_remaining(fill);
                     
-                    //add record to trade 
+                    //add record to trade.
                     Trade trade_ex;
                     trade_ex.OrderS_ID = maker.id();
                     trade_ex.OrderB_ID = NewID;
