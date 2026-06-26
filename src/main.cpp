@@ -11,11 +11,13 @@
 #include <list>
 #include <algorithm>
 #include <ostream>
+#include <charconv>
+
 
 
 enum class CommantType //M2
 {
-New,Cancle,PrintBook,Ouit};
+New,Cancle,PrintBook,Ouit,INVALID};
 
 enum class Side {//M1
     BUY = 0, SELL = 1 };
@@ -132,6 +134,10 @@ void cancel_order(int order_id_)
 
         if (order_side == Side::BUY){
             auto Bids_Order = Bids.find(order_price);
+            if(Bids_Order == Bids.end()){
+                std::println("This order was not found");
+                return;
+            }
             auto& Price_found = Bids_Order->second.fifo;
             Price_found.erase(order_loc);
             std::println("Order {} has now been erased", order_id_);
@@ -140,6 +146,10 @@ void cancel_order(int order_id_)
 
         else if (order_side == Side::SELL){
             auto Asks_Order = Ask.find(order_price);
+            if(Asks_Order == Ask.end()){
+                std::println("This order was not found");
+                return;
+            }
             auto& Price_found = Asks_Order->second.fifo;
             Price_found.erase(order_loc);
             std::println("Order {} has now been erased", order_id_);
@@ -174,7 +184,7 @@ void remove_index(int index_id_){
 
 void print_book(){
     
-    for (int i{}; i < Trade_Record.size(); i++){
+    for (size_t i{}; i < Trade_Record.size(); i++){
         auto obj = Trade_Record.at(i);
         std::println("Buy Order {} \n Sell Order {} \n Quantity {} \n Price: {} \n Time of order {}", obj.OrderB_ID, obj.OrderS_ID, obj.price, obj.Quantity, obj.TS);
 
@@ -363,43 +373,57 @@ int main () {
             std::string Token2 = CMD.substr(start2, com_pos2 - start2);
             size_t start3 = com_pos2 + 1;
             auto com_pos3 = CMD.find(" ", start3);
-            int Token3 = stod(CMD.substr(start3, com_pos3 - start3));
-            size_t start4 = com_pos3 + 1;
-            int  Token4 = stoi(CMD.substr(start4));
             
-            
-            if (Token2 == "BUY")
-            {command.side = Side::BUY;
-          
-            command.price = Token3;
-            command.Quantity = Token4;
+            const std::string Token3Str = CMD.substr(start3, com_pos3 - start3);
+            int Token3 {};
+            auto T3temp = std::from_chars(Token3Str.data(), Token3Str.data() + Token3Str.size(), Token3);// Using from_chat is a better perfomance choice then stoi which was prev used, no memory alloc and no crash of error/throw
+            if (T3temp.ec != std::errc{} || Token3 <= 0 ){// check to see if ec that was made is the same as defult as would indicat no errors
+                std::println("You have not formatted your input correctly \n Correct Example: NEW BUY 10 100  \n Warning: No Negative numbers allowd ");
+                continue;
 
-            std::println("You have made a {} order of {} {} shares at a price of {} \n ",  Token1,Token2,Token4,Token3 );
-
-            
             }
             
+            size_t start4 = com_pos3 + 1;
+            int  Token4 {};
+            std::string Token4Str = CMD.substr(start4);
+            auto T4temp = std::from_chars(Token4Str.data(), Token4Str.data() + Token4Str.size(), Token4);            
+            if (T4temp.ec != std::errc{}  ||  Token4 <= 0){// check to see if ec that was made is the same as defult as would indicat no errors
+                std::println("You have not formatted your input correctly \n Correct Example: NEW BUY 10 100 \n Warning: No Negative numbers allowd  ");
+                continue;
+
+            }
+            if (Token2 == "BUY"){
+            command.side = Side::BUY;
+            command.price = Token3;
+            command.Quantity = Token4;
+            std::println("You have made a {} order of {} {} shares at a price of {} \n ",  Token1,Token2,Token4,Token3 );
+            }
             
             else if (Token2 == "SELL")
             { 
             command.side = Side::SELL;
-            
-            
             command.price = Token3;
             command.Quantity = Token4;
-
             std::println("You have made a {} order of {} {} shares at a price of {} \n" , Token1,Token2,Token4,Token3 );
-            
             }
+            
             else { std::cout << "Error your second statment must either be BUY/SELL \n" << std::endl;
             continue;}
            }
-        else if (Token1 == "CANCEL")
+        
+           else if (Token1 == "CANCEL")
         {
+            int Token2{};
             command.type = CommantType::Cancle;
             size_t start2 = com_pos1 + 1;
-            std::string Token2 = CMD.substr(start2);
-            command.OrderID = stoi(Token2);
+            std::string Token2Str = CMD.substr(start2);
+            auto T2temp = std::from_chars(Token2Str.data(), Token2Str.data() + Token2Str.size(), Token2); 
+            if (T2temp.ec != std::errc{}){// check to see if ec that was made is the same as defult as would indicat no errors
+                std::println("You have not formatted your input correctly \n Correct Example: CANCEL 2  ");
+                continue;
+
+            }
+            command.OrderID = Token2;
             std::println("You have put a requrest to {} order {} \n",Token1,Token2 );
             
              
@@ -412,8 +436,14 @@ int main () {
 
         else if (Token1 == "QUIT")
         {
-            std::cout << "TBC" << std::endl;
+            command.type = CommantType::Ouit;
             
+        }
+
+        else {
+            command.type = CommantType::INVALID;
+            std::println("You did not pick a valid option please refear to docs");
+            continue;
         }
 
         //--------------------------------------------------------------------
@@ -429,14 +459,26 @@ int main () {
 
 
 
-        case (CommantType::Cancle): std::cout << "Test call working for Cancel" << std::endl;
+        case (CommantType::Cancle): 
         engine.cancel_order(command.OrderID);
          break;
 
 
-        case (CommantType::Ouit): std::cout << "Test call working for Quit" << std::endl; break;
+        case (CommantType::Ouit):
+        std::println("Progam is closing");
+        std::exit(1);
+        break;
+
         case (CommantType::PrintBook): std::cout << "Test call working for PB" << std::endl;
         engine.print_book();
+        break;
+        
+        case (CommantType::INVALID): std::cout << "You have not formatted an input correctly" << std::endl;
+        
+        break;
+
+        default:
+        std::println("You have not formatted an input correctly");
         break;
 
     } 
