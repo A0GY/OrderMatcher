@@ -1,8 +1,15 @@
 #pragma once
 #include <list>
-#include "Trade.hpp"
-enum class Side;
-enum class OrderStatus;
+#include <print>
+enum class CommandType{
+New,Cancle,PrintBook,Ouit,INVALID};
+enum class Side {//M1
+    BUY = 0, SELL = 1 };
+enum class OrderStatus { //M1
+    New,
+    PatiallyFilled,
+    Filled,
+    Cannclled,};
 
 class Order {
 
@@ -43,5 +50,5 @@ Side get_side() const{
 }
 };
 struct PriceLevel {std::list<Order> fifo;};
-enum class CommantType;
+
 
