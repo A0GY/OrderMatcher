@@ -24,7 +24,7 @@ int main () {
         if (Token1 == "NEW"){
 
             command.type = CommandType::New;
-            std::cout << "Command was set to NEW successfully \n"  << std::endl;
+            
             
             
             size_t start2 = com_pos1 + 1;
@@ -112,7 +112,7 @@ int main () {
      
     switch (command.type)
     {
-        case (CommandType::New): std::cout << "Test call working for new \n " << std::endl; 
+        case (CommandType::New):  
         engine.NewOrder(command);
         break;
 
@@ -128,7 +128,7 @@ int main () {
         std::exit(1);
         break;
 
-        case (CommandType::PrintBook): std::cout << "Test call working for PB" << std::endl;
+        case (CommandType::PrintBook): 
         engine.print_book();
         break;
         

@@ -1,8 +1,127 @@
-#include "MatchingEngine.hpp"
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+#include <deque>
+#include <chrono>
+#include <optional>
+#include <print>
+#include <string>
+#include <map>
+#include <unordered_map>
+#include <list>
+#include <algorithm>
+#include <ostream>
+#include <charconv>
 
 
 
-void MatchingEngine::cancel_order(int order_id_)
+enum class CommantType //M2
+{
+New,Cancle,PrintBook,Ouit,INVALID};
+
+enum class Side {//M1
+    BUY = 0, SELL = 1 };
+
+struct Command { //M2
+    CommantType type;
+    Side side;
+    int price;
+    int Quantity;
+    int OrderID; // If to cancel a Order
+
+// New Order: NEW SIDE 100 10
+// Cancel: Cancel 7
+// PrintBook/Quit 
+
+};
+
+enum class OrderStatus { //M1
+    New,
+    PatiallyFilled,
+    Filled,
+    Cannclled,
+
+};
+
+class  Order { //M1
+private:
+int ID {};
+Side side {};
+int Price {};
+int O_Quantity {};
+int N_Quantity {};
+int TS {}; 
+OrderStatus status;
+
+public:
+Order () = default;
+
+Order (int Id, Side s, int price, int o_quantity, int n_quantity, int ts, OrderStatus OS) : ID{Id}, side{s}, Price{price}, O_Quantity{o_quantity}, N_Quantity{n_quantity}, TS{ts}, status{OS} {}
+
+public:
+
+int remaining() const{
+    return N_Quantity;
+}
+
+void reduce_remaining (int filled) {
+
+    if (filled > 0 && filled <= N_Quantity){
+    N_Quantity -= filled;
+    // this would make sense? OrderStatus::Filled;
+   
+}
+     
+}
+
+void Filled() 
+{
+std::println("Order {} has been filled", ID);
+status = OrderStatus::Filled;
+}
+
+int id() const{
+    return ID;
+
+};
+int price() const{
+    return Price;
+}
+
+Side get_side() const{
+    return side;
+}
+
+};
+
+struct Trade{ //M1
+int OrderB_ID {};
+int OrderS_ID {};
+int price {};
+int Quantity {};
+std::time_t TS {};
+};
+
+struct PriceLevel {std::list<Order> fifo;};
+
+struct Location //To help cancel a order 
+{
+    Side side;          
+    int Price;
+    std::list<Order>::iterator it;
+
+};
+
+struct MatchingEngine 
+{
+int nextID {1};
+std::map<int,PriceLevel> Bids; // BUYERS
+std::map<int,PriceLevel> Ask; //SELLERS
+std::unordered_map<int,Location> order_index; // to cancel an order
+std::vector<Trade> Trade_Record; //trade recorded
+
+// member function to access order_index to cancel an order
+void cancel_order(int order_id_)
 {
     std::println("Attempting to cancel order number {}", order_id_);
 
@@ -51,7 +170,7 @@ void MatchingEngine::cancel_order(int order_id_)
 
 }
 
-void MatchingEngine::remove_index(int index_id_){
+void remove_index(int index_id_){
     auto find_index = order_index.find(index_id_);
     if (find_index != order_index.end()){
     order_index.erase(index_id_);
@@ -63,7 +182,7 @@ void MatchingEngine::remove_index(int index_id_){
 
 }
 
-void MatchingEngine::print_book(){
+void print_book(){
     
     for (size_t i{}; i < Trade_Record.size(); i++){
         auto obj = Trade_Record.at(i);
@@ -73,7 +192,8 @@ void MatchingEngine::print_book(){
 
 }
 
-int MatchingEngine::NewOrder(Command& EngineCommand)
+
+int NewOrder(Command& EngineCommand)
 {
 int NewID = nextID;  
 nextID++;
@@ -223,82 +343,151 @@ nextID++;
 }
 return 0;
 }
-
-size_t MatchingEngine::trade_count() const{
-
-
-    size_t TC = Trade_Record.size();
-    return TC;
 };
 
- std::optional<int> MatchingEngine::best_bid () const{ // optional useage when bids/ask empty
-    if (Bids.empty()){
-    std::println("Bids is currently empty");
-    return std::nullopt;
-}
+int main () {
+  auto live_ts = std::chrono::system_clock::now();
+  
+  std::cout << "time is : " << live_ts << "\n";
+  
+    MatchingEngine engine;
+    while(true){
+   
+   // Code to spilt tokens for mapping object variables
+   std::cout << "Please input youe chosen action (if unsure please check docs) \n"  << std::endl;
+   Command command;
+   std::string CMD {""}; 
+   std::getline(std::cin, CMD);
+    size_t start {0};
+        auto com_pos1 = CMD.find(" ",0);
+        std::string Token1 = CMD.substr(start, com_pos1);
+        
+        if (Token1 == "NEW"){
+
+            command.type = CommantType::New;
+            std::cout << "Command was set to NEW successfully \n"  << std::endl;
+            
+            
+            size_t start2 = com_pos1 + 1;
+            auto com_pos2 = CMD.find(" ", start2);
+            std::string Token2 = CMD.substr(start2, com_pos2 - start2);
+            size_t start3 = com_pos2 + 1;
+            auto com_pos3 = CMD.find(" ", start3);
+            
+            const std::string Token3Str = CMD.substr(start3, com_pos3 - start3);
+            int Token3 {};
+            auto T3temp = std::from_chars(Token3Str.data(), Token3Str.data() + Token3Str.size(), Token3);// Using from_chat is a better perfomance choice then stoi which was prev used, no memory alloc and no crash of error/throw
+            if (T3temp.ec != std::errc{} || Token3 <= 0 ){// check to see if ec that was made is the same as defult as would indicat no errors
+                std::println("You have not formatted your input correctly \n Correct Example: NEW BUY 10 100  \n Warning: No Negative numbers allowd ");
+                continue;
+
+            }
+            
+            size_t start4 = com_pos3 + 1;
+            int  Token4 {};
+            std::string Token4Str = CMD.substr(start4);
+            auto T4temp = std::from_chars(Token4Str.data(), Token4Str.data() + Token4Str.size(), Token4);            
+            if (T4temp.ec != std::errc{}  ||  Token4 <= 0){// check to see if ec that was made is the same as defult as would indicat no errors
+                std::println("You have not formatted your input correctly \n Correct Example: NEW BUY 10 100 \n Warning: No Negative numbers allowd  ");
+                continue;
+
+            }
+            if (Token2 == "BUY"){
+            command.side = Side::BUY;
+            command.price = Token3;
+            command.Quantity = Token4;
+            std::println("You have made a {} order of {} {} shares at a price of {} \n ",  Token1,Token2,Token4,Token3 );
+            }
+            
+            else if (Token2 == "SELL")
+            { 
+            command.side = Side::SELL;
+            command.price = Token3;
+            command.Quantity = Token4;
+            std::println("You have made a {} order of {} {} shares at a price of {} \n" , Token1,Token2,Token4,Token3 );
+            }
+            
+            else { std::cout << "Error your second statment must either be BUY/SELL \n" << std::endl;
+            continue;}
+           }
+        
+           else if (Token1 == "CANCEL")
+        {
+            int Token2{};
+            command.type = CommantType::Cancle;
+            size_t start2 = com_pos1 + 1;
+            std::string Token2Str = CMD.substr(start2);
+            auto T2temp = std::from_chars(Token2Str.data(), Token2Str.data() + Token2Str.size(), Token2); 
+            if (T2temp.ec != std::errc{}){// check to see if ec that was made is the same as defult as would indicat no errors
+                std::println("You have not formatted your input correctly \n Correct Example: CANCEL 2  ");
+                continue;
+
+            }
+            command.OrderID = Token2;
+            std::println("You have put a requrest to {} order {} \n",Token1,Token2 );
+            
+             
+        }
+        
+        else if (Token1 == "PRINTBOOK")
+        {
+            command.type = CommantType::PrintBook;
+        }
+
+        else if (Token1 == "QUIT")
+        {
+            command.type = CommantType::Ouit;
+            
+        }
+
+        else {
+            command.type = CommantType::INVALID;
+            std::println("You did not pick a valid option please refear to docs");
+            continue;
+        }
+
+        //--------------------------------------------------------------------
+        std::println("command has now been formed \n \n ");
+
+     // Now we disptaach to the engine but we need to actually create the engine methods first we will use a switch case and then send off 
+     
+    switch (command.type)
+    {
+        case (CommantType::New): std::cout << "Test call working for new \n " << std::endl; 
+        engine.NewOrder(command);
+        break;
+
+
+
+        case (CommantType::Cancle): 
+        engine.cancel_order(command.OrderID);
+         break;
+
+
+        case (CommantType::Ouit):
+        std::println("Progam is closing");
+        std::exit(1);
+        break;
+
+        case (CommantType::PrintBook): std::cout << "Test call working for PB" << std::endl;
+        engine.print_book();
+        break;
+        
+        case (CommantType::INVALID): std::cout << "You have not formatted an input correctly" << std::endl;
+        
+        break;
+
+        default:
+        std::println("You have not formatted an input correctly");
+        break;
+
+    } 
     
-    else {
-    unsigned int bd = std::prev(Bids.end())->first;
-    return bd;
-    }
-};
-
- std::optional<int> MatchingEngine::best_ask () const{
-
-    if (!Ask.empty()){ unsigned int ba = Ask.begin()->first;
-    return ba;}
-
-    else {
-        std::println("Asks is currently empty");
-        return std::nullopt;
-
-    }
     
 
-}
 
-bool MatchingEngine::hasOrder(int order_id_){
-std::println("Attempting to cancel order number {}", order_id_);
-auto find_order = order_index.find(order_id_);
-    if (find_order != order_index.end()){
-       std::println("This order exists and is resting");
-        return true;
-         }
-
-    else {std::println("This is not a valid order ");
-    return false;
-    }
-}
-
-std::optional<int> MatchingEngine::restingQuantityAt(Side side, int price){
-int sum {};
-if (side == Side::BUY){
-    
-    if (Bids.find(price) == Bids.end()){
-        return std::nullopt;
 
     }
-    
-    else {
-    auto& priceLoc = Bids.at(price).fifo;
-    for (auto i = priceLoc.begin(); i != priceLoc.end(); i++){
-        sum += i->remaining();
-    }}
-    }
-else 
-{
 
-    if (Ask.find(price) == Ask.end()){
-        return std::nullopt;
-
-    }
-    
-    else {
-    auto& priceLoc = Ask.at(price).fifo;
-    for (auto i = priceLoc.begin(); i != priceLoc.end(); i++){
-        sum += i->remaining();
-    }}
-}
-return sum;
-
+    return 0;
 }
