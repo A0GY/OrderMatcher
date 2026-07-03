@@ -127,7 +127,7 @@ nextID++;
      }
             //ADD logic for > 0 incoming to make parital order if fifio empty 
                 if (incoming > 0){
-                    
+                    //FIX logical issue as this will make a Parital fill even though it has 0 filles for there not being a mached price which isnt logically correct it should just form an order not partial order
                     // we need to turn this into a partial order as it has not been fully filled and there are no asks/sells open 
                     Order buy(NewID,Side::BUY,EngineCommand.price,incoming,incoming,0, OrderStatus::PatiallyFilled);
                      std::println("Partial order was made to fill quant of {} of order {}",incoming,nextID);
