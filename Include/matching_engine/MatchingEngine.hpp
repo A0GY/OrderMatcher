@@ -21,8 +21,9 @@ void cancel_order(int order_id_);
 void remove_index(int index_id_);
 int NewOrder(Command& EngineCommand);
 void print_book();
+std::optional<Trade> last_trade();
 
-size_t trade_count()const;
+size_t tradeCount()const;
 std::optional<int>best_bid()const;
 std::optional<int> best_ask()const;
 bool hasOrder(int order_id_);

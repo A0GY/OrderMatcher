@@ -1,0 +1,12 @@
+# Build output
+build/
+
+# Editor/IDE files
+.vscode/
+
+# Compiled objects and binaries
+*.o
+*.exe
+
+# OS junk
+.DS_Store

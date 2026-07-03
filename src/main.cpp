@@ -73,7 +73,7 @@ int main () {
            else if (Token1 == "CANCEL")
         {
             int Token2{};
-            command.type = CommandType::Cancle;
+            command.type = CommandType::Cancel;
             size_t start2 = com_pos1 + 1;
             std::string Token2Str = CMD.substr(start2);
             auto T2temp = std::from_chars(Token2Str.data(), Token2Str.data() + Token2Str.size(), Token2); 
@@ -95,7 +95,7 @@ int main () {
 
         else if (Token1 == "QUIT")
         {
-            command.type = CommandType::Ouit;
+            command.type = CommandType::Quit;
             
         }
 
@@ -118,12 +118,12 @@ int main () {
 
 
 
-        case (CommandType::Cancle): 
+        case (CommandType::Cancel): 
         engine.cancel_order(command.OrderID);
          break;
 
 
-        case (CommandType::Ouit):
+        case (CommandType::Quit):
         std::println("Progam is closing");
         std::exit(1);
         break;

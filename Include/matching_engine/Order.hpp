@@ -2,14 +2,14 @@
 #include <list>
 #include <print>
 enum class CommandType{
-New,Cancle,PrintBook,Ouit,INVALID};
+New,Cancel,PrintBook,Quit,INVALID};
 enum class Side {//M1
     BUY = 0, SELL = 1 };
 enum class OrderStatus { //M1
     New,
-    PatiallyFilled,
+    PartiallyFilled,
     Filled,
-    Cannclled,};
+    Cancelled,};
 
 class Order {
 

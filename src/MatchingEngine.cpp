@@ -129,7 +129,7 @@ nextID++;
                 if (incoming > 0){
                     //FIX logical issue as this will make a Parital fill even though it has 0 filles for there not being a mached price which isnt logically correct it should just form an order not partial order
                     // we need to turn this into a partial order as it has not been fully filled and there are no asks/sells open 
-                    Order buy(NewID,Side::BUY,EngineCommand.price,incoming,incoming,0, OrderStatus::PatiallyFilled);
+                    Order buy(NewID,Side::BUY,EngineCommand.price,incoming,incoming,0, OrderStatus::PartiallyFilled);
                      std::println("Partial order was made to fill quant of {} of order {}",incoming,nextID);
                     // maybe just turn this into a case to either make partial or remove object/add it to orders tracker
                     auto& level = Bids[EngineCommand.price];
@@ -204,7 +204,7 @@ nextID++;
                 if (incoming > 0){
                     
                     // we need to turn this into a partial order as it has not been fully filled and there are no asks/sells open 
-                    Order sell(NewID,Side::SELL,EngineCommand.price,incoming,incoming,0, OrderStatus::PatiallyFilled);
+                    Order sell(NewID,Side::SELL,EngineCommand.price,incoming,incoming,0, OrderStatus::PartiallyFilled);
                      std::println("Partial order was made to fill quant of {} of order {}",incoming,nextID);
                     // maybe just turn this into a case to either make partial or remove object/add it to orders tracker
                     auto& level = Ask[EngineCommand.price];
@@ -224,7 +224,7 @@ nextID++;
 return 0;
 }
 
-size_t MatchingEngine::trade_count() const{
+size_t MatchingEngine::tradeCount() const{
 
 
     size_t TC = Trade_Record.size();
@@ -258,7 +258,7 @@ size_t MatchingEngine::trade_count() const{
 }
 
 bool MatchingEngine::hasOrder(int order_id_){
-std::println("Attempting to cancel order number {}", order_id_);
+std::println("Order {} is being located ", order_id_);
 auto find_order = order_index.find(order_id_);
     if (find_order != order_index.end()){
        std::println("This order exists and is resting");
@@ -271,6 +271,7 @@ auto find_order = order_index.find(order_id_);
 }
 
 std::optional<int> MatchingEngine::restingQuantityAt(Side side, int price){
+
 int sum {};
 if (side == Side::BUY){
     
@@ -301,4 +302,17 @@ else
 }
 return sum;
 
+}
+
+std::optional<Trade> MatchingEngine::last_trade(){
+if (Trade_Record.empty())
+{
+    return std::nullopt;
+    std::println("Trade is currently empty");
+}
+else {
+Trade &vecLast {Trade_Record.back()};
+return vecLast;
+
+}
 }
