@@ -58,7 +58,7 @@ Each price level holds its resting orders in a std::list, preserving arrival ord
 order at a price is always at the front. std::list is chosen deliberately over std::vector
 because its iterators are stable: inserting or erasing an order only rewires neighbouring node
 pointers and never invalidates iterators to other orders. That stability is what makes the
-cancellation index below possible.
+cancellation index below possible..
 
 Cancellation index — std::unordered_map<int, Location>.
 To cancel by order ID without scanning the book, each live order ID maps to a Location holding its
