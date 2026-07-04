@@ -1,4 +1,11 @@
 
+cmake_minimum_required(VERSION 3.20)
+project(OrderMatcher LANGUAGES CXX)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+
 include(FetchContent)
 FetchContent_Declare(
   Catch2
@@ -7,11 +14,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Catch2)
 
-cmake_minimum_required(VERSION 3.20)
-project(OrderMatcher LANGUAGES CXX)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 
 add_library(matching_engine_lib src/Order.cpp src/MatchingEngine.cpp)
 target_include_directories(matching_engine_lib PUBLIC Include/matching_engine)

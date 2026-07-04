@@ -135,16 +135,19 @@ nextID++;
                     auto& level = Bids[EngineCommand.price];
                     level.fifo.push_back(buy);
                      
-            Location location;
-            location.side = Side::BUY;
-            location.Price = EngineCommand.price;
-            auto indexP = std::prev(level.fifo.end());
-            location.it = indexP;
-            order_index.insert({NewID,location}); // lovley syntax     
-            return NewID;
+                    Location location;
+                    location.side = Side::BUY;
+                    location.Price = EngineCommand.price;
+                    auto indexP = std::prev(level.fifo.end());
+                    location.it = indexP;
+                    order_index.insert({NewID,location}); // lovley syntax     
+                    return NewID;}
 
-                        
-        }
+            
+
+
+
+
     }
 }
     
@@ -238,14 +241,14 @@ size_t MatchingEngine::tradeCount() const{
 }
     
     else {
-    unsigned int bd = std::prev(Bids.end())->first;
+    int bd = std::prev(Bids.end())->first;
     return bd;
     }
 };
 
  std::optional<int> MatchingEngine::best_ask () const{
 
-    if (!Ask.empty()){ unsigned int ba = Ask.begin()->first;
+    if (!Ask.empty()){ int ba = Ask.begin()->first;
     return ba;}
 
     else {
