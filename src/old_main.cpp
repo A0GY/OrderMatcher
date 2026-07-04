@@ -17,7 +17,7 @@
 
 enum class CommantType //M2
 {
-New,Cancle,PrintBook,Ouit,INVALID};
+New,Cancle,PrintBook,Quit,INVALID};
 
 enum class Side {//M1
     BUY = 0, SELL = 1 };
@@ -39,7 +39,7 @@ enum class OrderStatus { //M1
     New,
     PatiallyFilled,
     Filled,
-    Cannclled,
+    Cancelled,
 
 };
 
@@ -466,7 +466,7 @@ int main () {
 
         case (CommantType::Ouit):
         std::println("Progam is closing");
-        std::exit(1);
+        std::exit(0);
         break;
 
         case (CommantType::PrintBook): std::cout << "Test call working for PB" << std::endl;
