@@ -1,7 +1,7 @@
 C++23 Limit-Order Matching Engine
 
 A single-instrument limit-order-book matching engine written in modern C++23. It implements
-price-time priority matching with O(1) order cancellation, driven by a simple
+price-time priority matching with a direct order-ID cancellation index, driven by a simple
 command-line interface.
 
 This is a learning-oriented but production-shaped project: the matching logic is separated into a
@@ -36,7 +36,7 @@ Execution at the maker's price: a crossing order trades at the resting (maker's)
 price, giving price improvement to the aggressor.
 Partial fills: an order larger than the available liquidity fills what it can; the unfilled
 remainder rests on the book with its reduced quantity.
-Cancellation: any resting order can be removed by ID in constant time.
+Cancellation: a resting order is located directly by ID without scanning the full book; the current path then performs a logarithmic price-level lookup before constant-time list erasure.
 Input validation: malformed, non-numeric, or non-positive orders are rejected at the input
 layer before reaching the matching logic.
 
@@ -63,7 +63,7 @@ cancellation index below possible..
 Cancellation index — std::unordered_map<int, Location>.
 To cancel by order ID without scanning the book, each live order ID maps to a Location holding its
 side, price, and a stable std::list iterator pointing directly at the order's node. Cancelling
-is then an O(1) hash lookup followed by an O(1) list erase. The index is kept in sync with the book
+uses an average O(1) hash lookup, an O(log P) price-level lookup for P active price levels, and an O(1) list erase. The index is kept in sync with the book
 on every path that removes an order — both explicit cancels and orders consumed by matching — so it
 never holds a dangling iterator.
 
@@ -127,7 +127,7 @@ The build produces two executables inside build/: engine (the CLI) and tests (th
 
 ## Benchmark
 
-> **Reproducibility status:** These measurements were produced from a local standalone driver and `bench` CMake target that are not yet present on the repository's `main` branch. Commit those two existing local changes before presenting the benchmark as independently reproducible from this repository.
+> **Reproducibility status:** These measurements were produced from a local working tree whose standalone driver, `bench` CMake target, and hot-path logging changes are not yet present on the repository's `main` branch. Commit those existing local changes before presenting the benchmark as independently reproducible from this repository.
 
 The local benchmark driver is a standalone, single-threaded throughput driver, separate from the Catch2 correctness suite. It pre-generates the complete command stream and then times only the loop that submits commands to `MatchingEngine::NewOrder`; workload generation, vector allocation, and console output are outside the measured region.
 
