@@ -1,6 +1,6 @@
 # Build output
+build-release/
 build/
-
 # Editor/IDE files
 .vscode/
 
