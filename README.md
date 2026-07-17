@@ -91,6 +91,7 @@ OrderMatcher/
 ├── src/                         # implementation
 │   ├── Order.cpp
 │   ├── MatchingEngine.cpp
+│   ├── benchmarking.cpp         #   standalone throughput benchmark
 │   └── main.cpp                 #   CLI entry point
 └── tests/
     └── test_matching_engine.cpp # Catch2 unit tests
@@ -122,7 +123,51 @@ cmake -S . -B build
 # build (produces the engine and the test runner)
 cmake --build build
 
-The build produces two executables inside build/: engine (the CLI) and tests (the test suite).
+The build produces three executables inside build/: engine (the CLI), bench (the standalone throughput benchmark), and tests (the test suite).
+
+
+## Benchmark
+
+The `bench` target is a standalone, single-threaded throughput driver, separate from the Catch2 correctness suite. It pre-generates the complete command stream and then times only the loop that submits commands to `MatchingEngine::NewOrder`; workload generation, vector allocation, and console output are outside the measured region.
+
+### Workload
+
+- 1,000,000 `NEW` commands
+- Fixed `std::mt19937` seed: `55`
+- Approximately 50/50 BUY/SELL selection via `std::bernoulli_distribution(0.5)`
+- Uniform integer prices and quantities in the inclusive range 1-100
+- No cancellation commands, networking, parsing, or hot-path console logging
+- Optimised CMake `Release` build
+
+### Test environment
+
+- AMD Ryzen 5 5600X (6 cores / 12 threads; approximately 4.63 GHz observed boost)
+- Fedora Linux
+- GCC 16.1.1
+- Five separate process executions; the median is reported
+
+### Results
+
+| Run | Elapsed time (s) | Throughput (operations/s) |
+| ---: | ---: | ---: |
+| 1 | 0.402642 | 2,483,590 |
+| 2 | 0.407582 | 2,453,490 |
+| 3 | 0.395779 | 2,526,670 |
+| 4 | 0.389554 | 2,567,040 |
+| 5 | 0.400037 | 2,499,770 |
+| **Median** | **0.400037** | **2,499,770** |
+
+**Median throughput: approximately 2.50 million new-order operations per second.**
+
+The implied approximately 400 ns per operation is total batch time divided by operation count; it is not a sampled per-order latency or tail-latency measurement. Results are workload- and hardware-specific and should not be compared directly with benchmarks using different order mixes, features, or machines.
+
+Build and run the benchmark:
+
+```bash
+cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release
+cmake --build build-release --target bench
+./build-release/bench
+```
 
 
 Running
