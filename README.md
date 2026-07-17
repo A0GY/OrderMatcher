@@ -96,8 +96,8 @@ OrderMatcher/
 └── tests/
     └── test_matching_engine.cpp # Catch2 unit tests
 
-The engine compiles once into a library (matching_engine_lib); the CLI executable and the test
-executable both link against it.
+The engine compiles once into a library (`matching_engine_lib`); the CLI, benchmark, and test
+executables all link against it.
 
 
 Building
@@ -120,7 +120,7 @@ target_link_libraries line in CMakeLists.txt.
 bash# configure
 cmake -S . -B build
 
-# build (produces the engine and the test runner)
+# build (produces the engine, benchmark, and test runner)
 cmake --build build
 
 The build produces three executables inside build/: engine (the CLI), bench (the standalone throughput benchmark), and tests (the test suite).
