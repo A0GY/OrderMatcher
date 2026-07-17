@@ -23,7 +23,10 @@ target_link_libraries(matching_engine_lib PUBLIC stdc++exp)
 add_executable(engine src/main.cpp)
 target_link_libraries(engine PRIVATE matching_engine_lib)
 
+ add_executable(bench src/benchmarking.cpp)
+target_link_libraries(bench PRIVATE matching_engine_lib)
+
 add_executable(tests tests/test_matching_engine.cpp)
 target_link_libraries(tests PRIVATE matching_engine_lib Catch2::Catch2WithMain)
 
- 
+

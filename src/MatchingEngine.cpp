@@ -55,7 +55,7 @@ void MatchingEngine::remove_index(int index_id_){
     auto find_index = order_index.find(index_id_);
     if (find_index != order_index.end()){
     order_index.erase(index_id_);
-    std::println("Order {} was removed from the order index map", index_id_);
+   
     }
     else {
         std::println("error index {} was not in the order index", index_id_);
@@ -84,7 +84,7 @@ nextID++;
             //Getters and setter for order because its private        
             auto& level = Bids[EngineCommand.price];
             level.fifo.push_back(buy);
-            std::println("Your Buy order has been added to the book \n \n");
+            
             
             Location location;
             location.side = Side::BUY;
@@ -130,7 +130,7 @@ nextID++;
                     //FIX logical issue as this will make a Parital fill even though it has 0 filles for there not being a mached price which isnt logically correct it should just form an order not partial order
                     // we need to turn this into a partial order as it has not been fully filled and there are no asks/sells open 
                     Order buy(NewID,Side::BUY,EngineCommand.price,incoming,incoming,0, OrderStatus::PartiallyFilled);
-                     std::println("Partial order was made to fill quant of {} of order {}",incoming,nextID);
+                     
                     // maybe just turn this into a case to either make partial or remove object/add it to orders tracker
                     auto& level = Bids[EngineCommand.price];
                     level.fifo.push_back(buy);
@@ -208,7 +208,7 @@ nextID++;
                     
                     // we need to turn this into a partial order as it has not been fully filled and there are no asks/sells open 
                     Order sell(NewID,Side::SELL,EngineCommand.price,incoming,incoming,0, OrderStatus::PartiallyFilled);
-                     std::println("Partial order was made to fill quant of {} of order {}",incoming,nextID);
+                     
                     // maybe just turn this into a case to either make partial or remove object/add it to orders tracker
                     auto& level = Ask[EngineCommand.price];
                     level.fifo.push_back(sell);

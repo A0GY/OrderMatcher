@@ -55,7 +55,7 @@ int main () {
             command.side = Side::BUY;
             command.price = Token3;
             command.Quantity = Token4;
-            std::println("You have made a {} order of {} {} shares at a price of {} \n ",  Token1,Token2,Token4,Token3 );
+            
             }
             
             else if (Token2 == "SELL")
@@ -63,7 +63,7 @@ int main () {
             command.side = Side::SELL;
             command.price = Token3;
             command.Quantity = Token4;
-            std::println("You have made a {} order of {} {} shares at a price of {} \n" , Token1,Token2,Token4,Token3 );
+            
             }
             
             else { std::cout << "Error your second statment must either be BUY/SELL \n" << std::endl;
@@ -83,7 +83,7 @@ int main () {
 
             }
             command.OrderID = Token2;
-            std::println("You have put a requrest to {} order {} \n",Token1,Token2 );
+            
             
              
         }
@@ -106,7 +106,7 @@ int main () {
         }
 
         //--------------------------------------------------------------------
-        std::println("command has now been formed \n \n ");
+        
 
      // Now we disptaach to the engine but we need to actually create the engine methods first we will use a switch case and then send off 
      

@@ -12,7 +12,6 @@ void  Order::reduce_remaining (int filled) {
 
 void  Order::Filled() 
 {
-std::println("Order {} has been filled", ID);
 status = OrderStatus::Filled;
 }
 
