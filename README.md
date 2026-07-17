@@ -91,13 +91,12 @@ OrderMatcher/
 ├── src/                         # implementation
 │   ├── Order.cpp
 │   ├── MatchingEngine.cpp
-│   ├── benchmarking.cpp         #   standalone throughput benchmark
 │   └── main.cpp                 #   CLI entry point
 └── tests/
     └── test_matching_engine.cpp # Catch2 unit tests
 
-The engine compiles once into a library (`matching_engine_lib`); the CLI, benchmark, and test
-executables all link against it.
+The engine compiles once into a library (`matching_engine_lib`); the CLI and test executables
+both link against it.
 
 
 Building
@@ -120,15 +119,17 @@ target_link_libraries line in CMakeLists.txt.
 bash# configure
 cmake -S . -B build
 
-# build (produces the engine, benchmark, and test runner)
+# build (produces the engine and test runner)
 cmake --build build
 
-The build produces three executables inside build/: engine (the CLI), bench (the standalone throughput benchmark), and tests (the test suite).
+The build produces two executables inside build/: engine (the CLI) and tests (the test suite).
 
 
 ## Benchmark
 
-The `bench` target is a standalone, single-threaded throughput driver, separate from the Catch2 correctness suite. It pre-generates the complete command stream and then times only the loop that submits commands to `MatchingEngine::NewOrder`; workload generation, vector allocation, and console output are outside the measured region.
+> **Reproducibility status:** These measurements were produced from a local standalone driver and `bench` CMake target that are not yet present on the repository's `main` branch. Commit those two existing local changes before presenting the benchmark as independently reproducible from this repository.
+
+The local benchmark driver is a standalone, single-threaded throughput driver, separate from the Catch2 correctness suite. It pre-generates the complete command stream and then times only the loop that submits commands to `MatchingEngine::NewOrder`; workload generation, vector allocation, and console output are outside the measured region.
 
 ### Workload
 
@@ -161,13 +162,7 @@ The `bench` target is a standalone, single-threaded throughput driver, separate 
 
 The implied approximately 400 ns per operation is total batch time divided by operation count; it is not a sampled per-order latency or tail-latency measurement. Results are workload- and hardware-specific and should not be compared directly with benchmarks using different order mixes, features, or machines.
 
-Build and run the benchmark:
-
-```bash
-cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release
-cmake --build build-release --target bench
-./build-release/bench
-```
+The measurements were made from an optimised CMake `Release` build. Exact build commands will be added once the local driver and its CMake target are committed.
 
 
 Running
