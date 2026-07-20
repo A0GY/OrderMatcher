@@ -30,3 +30,5 @@ add_executable(tests tests/test_matching_engine.cpp)
 target_link_libraries(tests PRIVATE matching_engine_lib Catch2::Catch2WithMain)
 
 
+add_executable(server serverTCP/TCPServer.cpp)
+target_link_libraries(server PRIVATE matching_engine_lib)
