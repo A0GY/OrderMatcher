@@ -63,7 +63,7 @@ std::vector<std::string> MatchingEngine::print_book(){
     for (size_t i{}; i < Trade_Record.size(); i++){
         auto obj = Trade_Record.at(i);
         std::println("Buy Order {} \n Sell Order {} \n Quantity {} \n Price: {} \n Time of order {}", obj.OrderB_ID, obj.OrderS_ID, obj.price, obj.Quantity,obj.TS);
-        std::vector<std::string> return_book = {" \nBuy Order: " + std::to_string(obj.OrderB_ID) + "\n","Sell Order: " + std::to_string(obj.OrderS_ID) + "\n" ,"Quantity: " +std::to_string(obj.Quantity)+ "\n" , "Price : " + std::to_string(obj.price) + " \n","Time of Order: " +std::to_string(obj.TS) + "\n"};
+        std::vector<std::string> return_book = {" \nBuy Order: " + std::to_string(obj.OrderB_ID) + "\n","Sell Order: " + std::to_string(obj.OrderS_ID) + "\n" ,"Quantity: " +std::to_string(obj.Quantity)+ "\n" , "Price : " + std::to_string(obj.price) + " \n","Time of Order: " +std::to_string(obj.TS) + "\n" + "END \n"};
     
         return return_book;
         
@@ -72,8 +72,7 @@ return {"failed"};
 }
 
 int MatchingEngine::NewOrder(Command& EngineCommand)
-{
-int NewID = nextID;  
+{int NewID = nextID;  
 nextID++;
     if (EngineCommand.side == Side::BUY){
         if (Ask.empty()){

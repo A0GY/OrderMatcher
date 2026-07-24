@@ -20,10 +20,10 @@ std::vector<Trade> Trade_Record;
 public:
 std::string cancel_order(int order_id_);
 void remove_index(int index_id_);
-int NewOrder(Command& EngineCommand);
+
 std::vector<std::string> print_book();
 std::optional<Trade> last_trade();
-
+int NewOrder(Command& EngineCommand);
 size_t tradeCount()const;
 std::optional<int>best_bid()const;
 std::optional<int> best_ask()const;
