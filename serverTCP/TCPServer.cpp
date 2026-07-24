@@ -2,6 +2,7 @@
 #include <netdb.h> //getaddrinfo, addrinfo, AF_*, AI_*
 #include <unistd.h>   // close()
 #include <cstring> //strlen
+#include <string>
 #include <print>
 #include <stdio.h>
 #include <iostream>
@@ -18,9 +19,7 @@ MatchingEngine engine;
 Command command;
 std::cout << "time is : " << live_ts << "\n";
 
-
 class Socket{
-
 private:
 int fd_ = -1; // defult set to error
 
@@ -65,19 +64,16 @@ freeaddrinfo(res);
 if (listen(sockfd.get(), 10) == -1) {perror("listen");
 return 1;}
 
+while (true){
 Socket connfd ( accept(sockfd.get() ,nullptr,nullptr));
-
 if (connfd.get() == -1){perror("accept");
 return 1;}
-
 const char* msg = "Hello, World! \n";
 send (connfd.get(), msg, strlen(msg), 0);
 
-
-
+bool keep_client = true;
 // loop over to take input from client,, not all bytes may have been moved from kernel to buffer to we need to loop over 
-while (true){
-
+while (keep_client == true){
 ssize_t _recv = recv(connfd.get(),_buffer.data(),_buffer.size(),0);
 
 if (_recv == -1){ perror("recv");
@@ -86,7 +82,6 @@ return 1;}
 else if(_recv == 0){ std::cout << "client disconnected" ;
 break;}
 
-
 for (ssize_t i {}; i<_recv; i++){
 
     std::cout << _buffer[i];
@@ -94,7 +89,6 @@ for (ssize_t i {}; i<_recv; i++){
 
 stringBuffer.append(_buffer.data(),_recv); 
 std::cout << "string buffer: " << stringBuffer;
-
 
 auto subFind = stringBuffer.find('\n');
 while (subFind != std::string::npos){
@@ -113,8 +107,6 @@ size_t start {0};
         if (Token1 == "NEW"){
 
             command.type = CommandType::New;
-            
-            
             
             size_t start2 = com_pos1 + 1;
             auto com_pos2 = CommandLine.find(" ", start2);
@@ -172,9 +164,7 @@ size_t start {0};
 
             }
             command.OrderID = Token2;
-            
-            
-             
+                         
         }
         
         else if (Token1 == "PRINTBOOK")
@@ -201,24 +191,35 @@ size_t start {0};
      
     switch (command.type)
     {
-        case (CommandType::New):  
-        engine.NewOrder(command);
+        case (CommandType::New): {
+        int i = engine.NewOrder(command);
+        std::string msg = std::to_string(i);
+        msg.append("\n");
+       send(connfd.get(), msg.data(), msg.size(), 0); } // need to point at start of string and length for send()
         break;
 
+        case (CommandType::Cancel): {
+        std::string cancel_retun = engine.cancel_order(command.OrderID);
+        send(connfd.get(), cancel_retun.data(), cancel_retun.size(), 0);
+        }break;
 
+        case (CommandType::Quit):{
+        const char * msg ="Disconected \n" ;
+        send(connfd.get(),msg, strlen(msg), 0);
+      
+        keep_client = false;
+        break;}
 
-        case (CommandType::Cancel): 
-        engine.cancel_order(command.OrderID);
-         break;
+        case (CommandType::PrintBook): {
+        std::vector<std::string> book_retun = engine.print_book();
+        
+        for ( auto i : book_retun){
+            send(connfd.get(), i.data(), i.size(), 0);
 
+        }
+    
+    }
 
-        case (CommandType::Quit):
-        std::println("Progam is closing");
-        std::exit(1);
-        break;
-
-        case (CommandType::PrintBook): 
-        engine.print_book();
         break;
         
         case (CommandType::INVALID): std::cout << "You have not formatted an input correctly" << std::endl;
@@ -231,13 +232,8 @@ size_t start {0};
 
     } 
     
-    
-
-
-
-
 }
 
-
+}
 
 }
