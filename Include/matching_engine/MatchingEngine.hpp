@@ -6,6 +6,7 @@
 #include "Location.hpp"
 #include "Command.hpp"
 #include "Trade.hpp"
+#include <string>
 
 struct MatchingEngine{
 int nextID{1};
@@ -17,10 +18,10 @@ std::unordered_map<int,Location> order_index; // to cancel an order
 std::vector<Trade> Trade_Record; 
 
 public:
-void cancel_order(int order_id_);
+std::string cancel_order(int order_id_);
 void remove_index(int index_id_);
 int NewOrder(Command& EngineCommand);
-void print_book();
+std::vector<std::string> print_book();
 std::optional<Trade> last_trade();
 
 size_t tradeCount()const;

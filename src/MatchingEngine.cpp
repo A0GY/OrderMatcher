@@ -1,10 +1,10 @@
 #include "MatchingEngine.hpp"
+#include <string>
 
 
-
-void MatchingEngine::cancel_order(int order_id_)
+std::string MatchingEngine::cancel_order(int order_id_)
 {
-    std::println("Attempting to cancel order number {}", order_id_);
+    //std::println("Attempting to cancel order number {}", order_id_);
 
     auto find_order = order_index.find(order_id_);
     if (find_order != order_index.end()){
@@ -16,40 +16,35 @@ void MatchingEngine::cancel_order(int order_id_)
         if (order_side == Side::BUY){
             auto Bids_Order = Bids.find(order_price);
             if(Bids_Order == Bids.end()){
-                std::println("This order was not found");
-                return;
+                
+                return {"This ordeer was not found \n"};
             }
             auto& Price_found = Bids_Order->second.fifo;
             Price_found.erase(order_loc);
-            std::println("Order {} has now been erased", order_id_);
+            
             order_index.erase(order_id_);
+            return {"Order has now been erased \n"};
         }
 
         else if (order_side == Side::SELL){
             auto Asks_Order = Ask.find(order_price);
             if(Asks_Order == Ask.end()){
-                std::println("This order was not found");
-                return;
+                
+                return {"This order was not found \n"};
             }
             auto& Price_found = Asks_Order->second.fifo;
             Price_found.erase(order_loc);
-            std::println("Order {} has now been erased", order_id_);
+            return{"Order has now been erased \n"};
             order_index.erase(order_id_);
         }
 
     }
 
-    else {std::println("This is not a valid order ");
+    return {"This is not a valid order \n"};
     
-    }
-
-    
-
-
-
-
-
 }
+
+
 
 void MatchingEngine::remove_index(int index_id_){
     auto find_index = order_index.find(index_id_);
@@ -63,14 +58,17 @@ void MatchingEngine::remove_index(int index_id_){
 
 }
 
-void MatchingEngine::print_book(){
+std::vector<std::string> MatchingEngine::print_book(){
     
     for (size_t i{}; i < Trade_Record.size(); i++){
         auto obj = Trade_Record.at(i);
-        std::println("Buy Order {} \n Sell Order {} \n Quantity {} \n Price: {} \n Time of order {}", obj.OrderB_ID, obj.OrderS_ID, obj.price, obj.Quantity, obj.TS);
-
+        std::println("Buy Order {} \n Sell Order {} \n Quantity {} \n Price: {} \n Time of order {}", obj.OrderB_ID, obj.OrderS_ID, obj.price, obj.Quantity,obj.TS);
+        std::vector<std::string> return_book = {" \nBuy Order: " + std::to_string(obj.OrderB_ID) + "\n","Sell Order: " + std::to_string(obj.OrderS_ID) + "\n" ,"Quantity: " +std::to_string(obj.Quantity)+ "\n" , "Price : " + std::to_string(obj.price) + " \n","Time of Order: " +std::to_string(obj.TS) + "\n"};
+    
+        return return_book;
+        
     }
-
+return {"failed"};
 }
 
 int MatchingEngine::NewOrder(Command& EngineCommand)
