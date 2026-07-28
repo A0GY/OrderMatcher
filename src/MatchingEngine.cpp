@@ -34,8 +34,8 @@ std::string MatchingEngine::cancel_order(int order_id_)
             }
             auto& Price_found = Asks_Order->second.fifo;
             Price_found.erase(order_loc);
-            return{"Order has now been erased \n"};
             order_index.erase(order_id_);
+            return{"Order has now been erased \n"};
         }
 
     }
@@ -59,16 +59,24 @@ void MatchingEngine::remove_index(int index_id_){
 }
 
 std::vector<std::string> MatchingEngine::print_book(){
-    
+    std::vector<std::string> return_book;
     for (size_t i{}; i < Trade_Record.size(); i++){
         auto obj = Trade_Record.at(i);
         std::println("Buy Order {} \n Sell Order {} \n Quantity {} \n Price: {} \n Time of order {}", obj.OrderB_ID, obj.OrderS_ID, obj.price, obj.Quantity,obj.TS);
-        std::vector<std::string> return_book = {" \nBuy Order: " + std::to_string(obj.OrderB_ID) + "\n","Sell Order: " + std::to_string(obj.OrderS_ID) + "\n" ,"Quantity: " +std::to_string(obj.Quantity)+ "\n" , "Price : " + std::to_string(obj.price) + " \n","Time of Order: " +std::to_string(obj.TS) + "\n" + "END \n"};
+        return_book.push_back(std::string{
+    "Buy Order: " + std::to_string(obj.OrderB_ID) + "\n" +
+    "Sell Order: " + std::to_string(obj.OrderS_ID) + "\n" +
+    "Quantity: " + std::to_string(obj.Quantity) + "\n" +
+    "Price: " + std::to_string(obj.price) + "\n" +
+    "Time of Order: " + std::to_string(obj.TS) + "\n" +
+    "END\n"
+});  
     
-        return return_book;
+        
         
     }
-return {"failed"};
+    return_book.push_back("END\n");
+    return return_book;
 }
 
 int MatchingEngine::NewOrder(Command& EngineCommand)
@@ -138,7 +146,7 @@ nextID++;
                     auto indexP = std::prev(level.fifo.end());
                     location.it = indexP;
                     order_index.insert({NewID,location}); // lovley syntax     
-                    return NewID;}
+                    }return NewID;
 
             
 
@@ -216,9 +224,9 @@ nextID++;
                     auto indexP = std::prev(level.fifo.end());
                     location.it = indexP;
                     order_index.insert({NewID,location});
-                    return NewID;
                     
-        }
+                    
+        }return NewID;
     }
 }
 return 0;

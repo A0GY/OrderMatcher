@@ -91,12 +91,9 @@ stringBuffer.append(_buffer.data(),_recv);
 std::cout << "string buffer: " << stringBuffer;
 
 auto subFind = stringBuffer.find('\n');
-while (subFind != std::string::npos){
-CommandLine = stringBuffer.substr(0,subFind);
-std::cout << "CommandLine test sub: " << CommandLine << '\n';
-stringBuffer.erase(0,subFind +1);
-subFind = stringBuffer.find('\n');
-} 
+while ((subFind = stringBuffer.find('\n')) != std::string::npos) {
+    std::string CommandLine = stringBuffer.substr(0, subFind);
+    stringBuffer.erase(0, subFind + 1);
 // parsing here, as we are out of inner while so test has been formed correctly
 std::cout << "testing CommandLine out of inner while " << CommandLine << '\n' << '\n' ;
 
@@ -236,4 +233,4 @@ size_t start {0};
 
 }
 
-}
+}}
