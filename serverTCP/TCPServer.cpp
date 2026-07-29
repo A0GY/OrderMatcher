@@ -13,7 +13,7 @@
 int main(){
 auto live_ts = std::chrono::system_clock::now();
 //std::array<char,500> _buffer ;
-std::string stringBuffer;
+
 std::string CommandLine;
 MatchingEngine engine;
 Command command;
@@ -76,6 +76,7 @@ bool keep_client = true;
 // loop over to take input from client,, not all bytes may have been moved from kernel to buffer to we need to loop over 
 while (keep_client == true){
 std::array<char,500> _buffer ; // moving to within client lifecycle to clear buffer once a client has     
+std::string stringBuffer;
 ssize_t _recv = recv(connfd.get(),_buffer.data(),_buffer.size(),0);
 
 if (_recv == -1){ perror("recv");
