@@ -10,7 +10,7 @@
 #include <charconv>
 #include "MatchingEngine.hpp"
 // TCP enigne to be atached to Matching engine 
-int main(){
+auto main() -> int{
 auto live_ts = std::chrono::system_clock::now();
 //std::array<char,500> _buffer ;
 
@@ -73,10 +73,11 @@ const char* msg = "Hello, World! \n";
 send (connfd.get(), msg, strlen(msg), 0);
 
 bool keep_client = true;
+std::string stringBuffer;
 // loop over to take input from client,, not all bytes may have been moved from kernel to buffer to we need to loop over 
 while (keep_client == true){
 std::array<char,500> _buffer ; // moving to within client lifecycle to clear buffer once a client has     
-std::string stringBuffer;
+
 ssize_t _recv = recv(connfd.get(),_buffer.data(),_buffer.size(),0);
 
 if (_recv == -1){ perror("recv");
@@ -109,7 +110,7 @@ size_t start {0};
             command.type = CommandType::New;
             
             size_t start2 = com_pos1 + 1;
-            auto com_pos2 = CommandLine.find(" ", start2);
+            auto com_pos2 = CommandLine.find(" ", start2);send(
             std::string Token2 = CommandLine.substr(start2, com_pos2 - start2);
             size_t start3 = com_pos2 + 1;
             auto com_pos3 = CommandLine.find(" ", start3);
