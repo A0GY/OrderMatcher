@@ -96,6 +96,5 @@ This measures batch throughput only and is not a per-order latency measurement.
 ## Roadmap
 
 * Multi-instrument order books
-* TCP server for submitting orders over the network
 * Order book depth output
 * Further testing and benchmarking
